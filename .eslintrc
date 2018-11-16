@@ -1,0 +1,17 @@
+{
+  "extends": ["react-app"],
+  "rules": {
+    "no-unused-vars": [
+      2,
+      {
+        "ignoreRestSiblings": true
+      }
+    ],
+    "no-unused-expressions": [
+      2,
+      {
+        "allowTaggedTemplates": true
+      }
+    ]
+  }
+}
