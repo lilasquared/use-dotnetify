@@ -1,21 +1,55 @@
 {
   "name": "use-dotnetify",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "Aaron Roberts <aaronmroberts1@gmail.com>",
+  "contributors": [
+    "Daryl Roberts <daryl.roberts@gmail.com>"
+  ],
   "bugs": {
     "url": "https://github.com/lilasquared/use-dotnetify/issues"
   },
   "description": "React Hook for pub-sub behavior using dotNetify.",
   "homepage": "https://github.com/lilasquared/use-dotnetify#readme",
   "license": "MIT",
-  "main": "use-dotnetify.js",
+  "main": "lib/use-dotnetify.js",
   "repository": "https://github.com/lilasquared/use-dotnetify.git",
-  "devDependencies": {
-    "react": "^16.7.0-alpha.0",
-    "dotnetify": "^4.4.0-beta.4"
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "compile": "babel ./src/client/use-dotnetify.jsx --out-dir lib --copy-files"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "peerDependencies": {
-    "react": "^16.7.0",
-    "dotnetify": "^3.2.0"
+    "dotnetify": "^3.4.0",
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0"
+  },
+  "dependencies": {
+    "use-force-update": "^1.0.7"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/preset-react": "^7.0.0",
+    "dotnetify": "^3.4.0",
+    "http-proxy-middleware": "^0.19.1",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-scripts": "3.1.1"
   }
 }
