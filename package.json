@@ -19,9 +19,6 @@
     "test": "react-scripts test",
     "compile": "babel ./src/client/use-dotnetify.jsx --out-dir lib --copy-files"
   },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -54,7 +51,7 @@
     "http-proxy-middleware": "^0.19.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
-    "react-scripts": "3.1.1",
+    "react-scripts": "3.0.1",
     "typescript": "^3.5.3"
   }
 }

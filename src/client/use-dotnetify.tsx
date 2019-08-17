@@ -2,153 +2,118 @@ import React, {
   useState,
   useEffect,
   useRef,
+  useCallback,
   useContext,
   createContext,
   MutableRefObject,
+  FC,
+  Component,
 } from "react"
 import useForceUpdate from "use-force-update"
-import { default as dotnetify, dotnetifyVM, ITemplate } from "dotnetify"
+import dotnetify, { dotnetifyVM } from "dotnetify"
 
-interface ModelHash {
-  [index: string]: {
-    vm: dotnetifyVM
-    state: any
-  }
+type DotNetifyContextProps = {
+  states: MutableRefObject<{ [key: string]: { [key: string]: any } }>
+  vms: MutableRefObject<{ [key: string]: dotnetifyVM }>
+  update: (model: string, newState: any) => void
 }
 
-interface DotNetifyProviderProps {
-  children: React.ReactElement
-}
-
-interface DotNetifyContext {
-  models: MutableRefObject<ModelHash>
-  cacheModel: (model: string, vm: dotnetifyVM, state: any) => void
-}
-
-const DotNetifyContext = createContext<DotNetifyContext>({
-  models: { current: {} },
-  cacheModel: () => {
-    throw new Error("not initialized")
+const DotNetifyContext = createContext<DotNetifyContextProps>({
+  states: { current: {} },
+  vms: { current: {} },
+  update: (model: string, newState: any) => {
+    throw new Error(`${model} not initialized: ${newState}`)
   },
 })
 
-export const DotNetifyProvider = (
-  props: DotNetifyProviderProps
-): React.ReactElement => {
-  const models = useRef<ModelHash>({})
+export const DotNetifyProvider: FC = props => {
+  const vms = useRef({})
+  const states = useRef({})
   const forceUpdate = useForceUpdate()
 
-  const cacheModel = useRef((model: string, vm: dotnetifyVM, state: any) => {
-    models.current = {
-      ...models.current,
-      [model]: {
-        vm,
-        state,
-      },
-    }
-    forceUpdate()
-  })
+  vms.current = dotnetify.react
+    .getViewModels()
+    // @ts-ignore
+    .reduce((prev, curr) => ({ ...prev, [curr.$vmId]: curr }), {})
+
+  const update = useCallback(
+    (model, newState) => {
+      states.current = {
+        ...states.current,
+        [model]: newState,
+      }
+      forceUpdate()
+    },
+    [forceUpdate]
+  )
 
   return (
-    <DotNetifyContext.Provider
-      value={{ models, cacheModel: cacheModel.current }}
-    >
+    <DotNetifyContext.Provider value={{ vms, states, update }}>
       {props.children}
     </DotNetifyContext.Provider>
   )
 }
 
-function useDotNetifyConnect<T>(
-  model: string,
-  initialState: T
-): [any, dotnetifyVM] {
-  const { models, cacheModel } = useContext(DotNetifyContext)
-  const state = useRef<T>(initialState)
-  const vm = useRef<dotnetifyVM>({
-    $dispatch: (value: any) => {},
-    $destroy: () => {},
-    onRouteEnter: (path: string, template: ITemplate): string => path,
-  })
-  const forceUpdate = useForceUpdate()
+export function useDotNetify<T>(model: string, initialState: T) {
+  const { vms, states, update } = useContext(DotNetifyContext)
+
+  if (!states.current[model]) {
+    update(model, initialState)
+  }
 
   useEffect(() => {
-    if (models.current[model] === undefined) {
+    let vm = vms.current[model]
+
+    if (vm === undefined) {
       const component = {
-        state: state.current,
+        state: states.current[model],
         setState: (newState: T) => {
-          state.current = newState
-          forceUpdate()
+          update(model, newState)
         },
-        render: () => <></>,
-        context: {},
-        forceUpdate: () => {},
-        props: {},
-        refs: {},
       }
 
-      vm.current = dotnetify.react.connect(model, component, {
-        getState: () => state.current,
-        setState: (newState: T) => {
-          state.current = newState
-          forceUpdate()
+      vm = dotnetify.react.connect(model, component as Component, {
+        getState: () => states.current[model],
+        setState: newState => {
+          update(model, newState)
         },
       })
     }
 
-    return () => {
-      debugger
-      vm.current && vm.current.$destroy()
-    }
-  }, [model, forceUpdate, cacheModel, models])
+    return () => vm && vm.$destroy()
+  }, [model, vms, states, update])
 
-  useEffect(() => {
-    cacheModel(model, vm.current, state.current)
-  }, [model, cacheModel])
-
-  return [state.current as any, vm.current as dotnetifyVM]
+  return [states.current[model], vms.current[model]]
 }
 
-type SetValue<T> = (value: T) => void
-
-export function useProperty<T>(
-  model: string,
-  property: string,
-  initialState: T
-): [T, SetValue<T>, SetValue<T>] {
-  const context = useContext(DotNetifyContext)
-  const models = context.models.current
-  const [value, setProperty] = useState<T>(initialState)
+export function useProperty(model: string, property: string) {
+  const { vms, states } = useContext(DotNetifyContext)
+  const [value, setValue] = useState(states.current[model][property])
   const didChange = useRef(false)
 
-  const setValue = (value: T) => {
-    setProperty(value)
+  const update = (value: any) => {
+    setValue(value)
     didChange.current = true
   }
 
-  const dispatch = (value: T) => {
-    if (models[model] === undefined) {
+  const dispatch = (value: any) => {
+    debugger
+    if (vms.current[model] === undefined) {
       throw new Error("Unable to dispatch, vm has not been initialized.")
     }
 
-    models[model].vm.$dispatch({ [property]: value })
+    vms.current[model].$dispatch({ [property]: value })
     didChange.current = true
   }
 
-  useEffect(() => {
-    if (models[model] === undefined) {
-      return
-    }
+  const state = states.current[model]
 
-    const state = models[model].state
+  useEffect(() => {
     if (value !== state[property] && !didChange.current) {
-      setProperty(state[property])
+      setValue(state[property])
       didChange.current = false
     }
-  }, [model, property, value, models])
+  }, [model, property, state, value])
 
-  return [value, setValue, dispatch]
-}
-
-export function useDotNetify<T>(model: string, initialState: T) {
-  return useDotNetifyConnect(model, initialState)
+  return [value, update, dispatch]
 }

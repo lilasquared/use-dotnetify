@@ -1,13 +1,7 @@
 import React from "react"
-import { DotNetifyProvider, useProperty, useDotNetify } from "./use-dotnetify2"
+import { DotNetifyProvider, useProperty, useDotNetify } from "./use-dotnetify"
 
-const SaveOnBlur = ({
-  model,
-  property,
-}: {
-  model: string
-  property: string
-}) => {
+const SaveOnBlur = ({ model, property }: { model: string; property: string }) => {
   const [value, setValue, dispatch] = useProperty(model, property)
 
   return (
@@ -31,10 +25,8 @@ const HelloWorld = () => {
   return (
     <div>
       <SaveOnBlur model="HelloWorldVm" property="FirstName" />
-      <SaveOnBlur model="HelloWorldVm" property="FirstName" />
+      <SaveOnBlur model="HelloWorldVm" property="LastName" />
       <br />
-      <SaveOnBlur model="HelloWorldVm" property="LastName" />
-      <SaveOnBlur model="HelloWorldVm" property="LastName" />
 
       <strong>{state.FullName}</strong>
     </div>
