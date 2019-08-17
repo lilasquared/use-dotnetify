@@ -17,7 +17,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "compile": "babel ./src/client/use-dotnetify.jsx --out-dir lib --copy-files"
+    "compile": "babel ./src/client/use-dotnetify.tsx --out-dir lib --extensions \".ts,.tsx\" --source-maps inline"
   },
   "browserslist": {
     "production": [
@@ -42,7 +42,10 @@
   "devDependencies": {
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
     "@babel/preset-react": "^7.0.0",
+    "@babel/preset-typescript": "^7.3.3",
     "@types/node": "^12.7.2",
     "@types/react": "^16.9.1",
     "@types/react-dom": "^16.8.5",
