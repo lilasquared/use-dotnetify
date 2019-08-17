@@ -1,6 +1,10 @@
 /node_modules
+/public
 /src
+.babelrc
+.eslintrc
 .gitignore
 .npmignore
+.prettierrc
 .travis.yml
-tsconfig.json
+yarn.lock
